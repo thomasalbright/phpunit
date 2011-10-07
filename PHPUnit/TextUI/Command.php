@@ -62,6 +62,7 @@ class PHPUnit_TextUI_Command
      * @var array
      */
     protected $arguments = array(
+      'generateMakefile'        => FALSE,
       'listGroups'              => FALSE,
       'loader'                  => NULL,
       'useDefaultConfiguration' => TRUE
@@ -94,6 +95,7 @@ class PHPUnit_TextUI_Command
       'log-json=' => NULL,
       'log-junit=' => NULL,
       'log-tap=' => NULL,
+      'make' => NULL,
       'process-isolation' => NULL,
       'repeat=' => NULL,
       'skeleton-class' => NULL,
@@ -183,6 +185,15 @@ class PHPUnit_TextUI_Command
 
         unset($this->arguments['test']);
         unset($this->arguments['testFile']);
+
+        if ($this->arguments['generateMakefile']) {
+            PHPUnit_TextUI_TestRunner::printVersionString();
+
+            $this->generateMakefile($suite);
+            print "Wrote Makefile for parallel test execution.\n";
+
+            exit(PHPUnit_TextUI_TestRunner::SUCCESS_EXIT);
+        }
 
         try {
             $result = $runner->doRun($suite, $this->arguments);
@@ -399,6 +410,11 @@ class PHPUnit_TextUI_Command
 
                 case '--log-tap': {
                     $this->arguments['tapLogfile'] = $option[1];
+                }
+                break;
+
+                case '--make': {
+                    $this->arguments['generateMakefile'] = TRUE;
                 }
                 break;
 
@@ -930,6 +946,8 @@ Usage: phpunit [switches] UnitTest [UnitTest.php]
   --include-path <path(s)>  Prepend PHP's include_path with given path(s).
   -d key[=value]            Sets a php.ini value.
 
+  --make                    Generate Makefile for parallel test execution.
+
   -h|--help                 Prints this usage information.
   --version                 Prints the version and exits.
 
@@ -943,5 +961,44 @@ EOT;
      */
     protected function handleCustomTestSuite()
     {
+    }
+
+    /**
+     * Generate Makefile for parallel test execution.
+     */
+    protected function generateMakefile(PHPUnit_Framework_TestSuite $suite)
+    {
+        $buffer   = '';
+        $tests    = '';
+        $classes  = array();
+        $coverage = isset($this->arguments['coverageClover'])  ||
+                    isset($this->arguments['reportDirectory']) ||
+                    isset($this->arguments['coveragePHP'])     ||
+                    isset($this->arguments['coverageTest']);
+
+        foreach ($suite as $test) {
+            $class     = new ReflectionClass($test);
+            $className = $class->getName();
+
+            if (!isset($classes[$className])) {
+                $file   = $class->getFileName();
+                $tests .= $className . ' ';
+
+                $buffer .= sprintf(
+                  "%s : \n\t\tphpunit --no-configuration --log-junit %s.xml%s %s %s > /dev/null\n\n",
+                  $className,
+                  $className,
+                  $coverage ? ' --coverage-php ' . $className . '.cov' : '',
+                  $className,
+                  $file
+                );
+
+                $classes[$className] = TRUE;
+            }
+        }
+
+        $buffer = 'tests : ' . $tests . "\n\n" . $buffer;
+
+        file_put_contents('Makefile', $buffer);
     }
 }
