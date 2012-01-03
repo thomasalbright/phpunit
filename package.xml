@@ -321,6 +321,14 @@
      </file>
     </dir>
     <dir name="Util">
+     <dir name="Configuration">
+      <file baseinstalldir="/" name="CLI.php" role="php">
+       <tasks:replace from="@package_version@" to="version" type="package-info" />
+      </file>
+      <file baseinstalldir="/" name="XML.php" role="php">
+       <tasks:replace from="@package_version@" to="version" type="package-info" />
+      </file>
+     </dir>
      <dir name="DeprecatedFeature">
       <file baseinstalldir="/" name="Logger.php" role="php">
        <tasks:replace from="@package_version@" to="version" type="package-info" />
