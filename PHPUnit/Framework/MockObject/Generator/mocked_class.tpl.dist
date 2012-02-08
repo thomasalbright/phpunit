@@ -7,6 +7,10 @@
     {
         return $this->__phpunit_getInvocationMocker()->expects($matcher);
     }
+	  public function expect($methodName)
+    {
+		    return $this->__phpunit_getInvocationMocker()->expect($methodName);
+    }
 
     public function __phpunit_getInvocationMocker()
     {

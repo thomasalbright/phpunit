@@ -193,5 +193,20 @@ class PHPUnit_Framework_MockObject_InvocationMocker implements PHPUnit_Framework
             $matcher->verify();
         }
     }
+	
+	/**
+	 * This is a customization in thomasalbright/phpunit, extending phpunit to
+	 * have a more readable interface.
+	 * 
+	 * @param string $methodName
+	 * @return test_Framework_MockObject_Builder_InvocationMocker
+	 */
+	public function expect($methodName)
+    {
+        $builder = new PHPUnit_Framework_MockObject_Builder_FluentInvocationMocker($this,
+				$methodName);
+
+        return $builder;
+    }
 }
 ?>
