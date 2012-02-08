@@ -372,6 +372,9 @@ class PHPUnit_Framework_MockObject_Mock
           "    }\n\n" .
           "    public function __phpunit_verify() {\n" .
           "        \$this->invocationMocker->verify();\n" .
+          "    }\n\n" .
+		  "    public function expect(\$methodName) {\n" .
+		  "       return \$this->invocationMocker->expect(\$methodName);\n" .
           "    }\n",
 
           $constructorCode,
